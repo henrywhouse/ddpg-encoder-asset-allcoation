@@ -1,0 +1,4 @@
+config.py
+misc/
+models/
+__pycache__/
