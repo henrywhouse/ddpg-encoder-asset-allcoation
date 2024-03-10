@@ -46,7 +46,7 @@ class RLInterface(object):
             self.train_reward_history.append(epi_rewards)
             if verbose > 0: 
                 print('Episode: {}/{}, Score: {:.4f}, 10 epi avg.: {:.4f}, All-time avg.: {:.4f}'.format(
-                      episode + 1, num_episodes, np.mean(epi_rewards), np.mean(self.train_avg_epi_scores),
+                      episode + 1, num_episodes, np.mean(epi_rewards), np.mean(self.train_avg_epi_scores[-10:]),
                       np.mean(self.train_avg_epi_scores)))
             if advanced_stats:
                 self._update_train_advanced_stats()
@@ -80,12 +80,12 @@ class RLInterface(object):
             self.test_reward_history.append(epi_rewards)
             if verbose > 0: 
                 print('Episode: {}/{}, Score: {:.4f}, 10 epi avg.: {:.4f}, All-time avg.: {:.4f}'.format(
-                      episode + 1, num_episodes, np.mean(epi_rewards), np.mean(self.test_avg_epi_scores), 
+                      episode + 1, num_episodes, np.mean(epi_rewards), np.mean(self.test_avg_epi_scores[-10:]), 
                       np.mean(self.test_avg_epi_scores)))
             # Update Scores & Statistics
             if advanced_stats:
                 self._update_test_advanced_stats()
-        history = self._compile_test_history(advanced_stats=advanced_stats)
+        history = self._compile_test_history(advanced_stats)
         self.agent.noise.reset()
         return history
     
@@ -213,18 +213,19 @@ class RLInterface(object):
         self.train_volatility_history += [np.std(self.train_env.portfolio_returns)*np.sqrt(252)]
         self.train_relative_volatility_history += [np.std(self.train_env.portfolio_returns) / np.std(self.train_env.benchmark_returns)]
         beta = np.cov(np.squeeze(self.train_env.portfolio_returns), 
-                        np.squeeze(self.train_env.benchmark_returns, ddof=1))[0,1] / np.var(self.train_env.benchmark_returns, ddof=1)
+                        np.squeeze(self.train_env.benchmark_returns), ddof=1)[0,1] / np.var(self.train_env.benchmark_returns, ddof=1)
         self.train_beta_history += [beta]
         correlation = np.corrcoef(np.squeeze(self.train_env.portfolio_returns), np.squeeze(self.train_env.benchmark_returns))[0,1]
         self.train_correlation_history += [correlation]
-        self.train_alpha_history += [np.mean(self.train_env.portfolio_returns) - beta*np.mean(self.train_env.benchmark_returns)]
+        self.train_alpha_history += [np.mean(self.train_env.portfolio_returns) - beta*np.mean(self.train_env.benchmark_returns) * 252 
+                                     / (self.train_env.window_size-self.train_env.lookback)]
     
 
     def _update_test_advanced_stats(self):
         """Update performance metrics for test episodes"""
 
-        cumulative_portfolio_returns = np.cumprod(1 + self.train_env.portfolio_returns, axis=0)
-        cumulative_benchmark_returns = np.cumprod(1 + self.train_env.benchmark_returns, axis=0)
+        cumulative_portfolio_returns = np.cumprod(1 + self.test_env.portfolio_returns, axis=0)
+        cumulative_benchmark_returns = np.cumprod(1 + self.test_env.benchmark_returns, axis=0)
         self.test_return_history += [cumulative_portfolio_returns[-1]]
         self.test_excess_returns_history += [cumulative_portfolio_returns[-1] - cumulative_benchmark_returns[-1]]
         self.test_volatility_history += [np.std(self.test_env.portfolio_returns)*np.sqrt(252)]
@@ -234,7 +235,8 @@ class RLInterface(object):
         self.test_beta_history += [beta]
         correlation = np.corrcoef(np.squeeze(self.test_env.portfolio_returns), np.squeeze(self.test_env.benchmark_returns))[0,1]
         self.test_correlation_history += [correlation]
-        self.test_alpha_history += [np.mean(self.test_env.portfolio_returns) - beta*np.mean(self.test_env.benchmark_returns)*252]
+        self.test_alpha_history += [np.mean(self.test_env.portfolio_returns) - beta*np.mean(self.test_env.benchmark_returns) * 252
+                                    / (self.test_env.window_size-self.train_env.lookback)]
 
 
     def _compile_train_history(self, advanced_stats):
@@ -287,4 +289,4 @@ class RLInterface(object):
         print('Avg. Correlation: {:.3f}'.format(np.mean(history['correlation_history'])))
         print('Avg. Return (Epi.): {:.3f}%'.format(np.mean(history['returns_history'])*100))
         print('Avg. Excess Return (Epi.): {:.3f}%'.format(np.mean(history['excess_returns_history'])*100))
-        print('Avg. Alpha (Ann.): {:.3f}%'.format(np.mean(history['alpha_history'])*100))
+        print('Avg. Alpha (Ann., rf=0%): {:.3f}%'.format(np.mean(history['alpha_history'])*100))
