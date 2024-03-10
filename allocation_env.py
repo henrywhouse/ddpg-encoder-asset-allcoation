@@ -10,7 +10,8 @@ from gym import Env
 import numpy as np
 from gym.spaces import Box
 import pandas as pd
-from ddpg_env_render import _plot_actions, _plot_returns, _plot_reward
+import ddpg_env_render_plotly as render_plotly
+import ddpg_env_render_mpl as render_mpl
 from rewards import rolling_sharpe_ratio, rolling_market_ratio, rolling_alpha
 
 class AssetAllocationEnv(Env):
@@ -135,7 +136,7 @@ class AssetAllocationEnv(Env):
 
 
     # RENDER #
-    def render(self, plot_benchmark=False, plot_actions=False, plot_relative=False, plot_returns=False, plot_individual=False,
+    def render(self, engine='plotly', plot_benchmark=False, plot_actions=False, plot_relative=False, plot_returns=False, plot_individual=False,
                plot_contribution=False):
         """Render the environment for analysis and visualization"""
 
@@ -144,14 +145,27 @@ class AssetAllocationEnv(Env):
         benchmark_cumulative_returns = self._get_cumulative_return(self.benchmark_returns)
         portfolio_cumulative_individual_returns = self._get_cumulative_return(self.portfolio_individual_returns)
         benchmark_cumulative_individual_returns = self._get_cumulative_return(self.benchmark_individual_returns)
-        _plot_reward(self.action_dates, self.rewards, self.benchmark_rewards, self.reward_type, self.holding_period, self.plot_benchmark)
-        if plot_actions:
-            _plot_actions(self.action_dates, self.actions, self.benchmark_actions, self.asset_names, plot_relative)
-        if plot_returns:
-            _plot_returns(self.window_dates, portfolio_cumulative_returns, benchmark_cumulative_returns, 
-                            portfolio_cumulative_individual_returns, benchmark_cumulative_individual_returns, 
-                            self.asset_names, self.num_assets, self.plot_benchmark, plot_individual=plot_individual,
-                            plot_contribution=plot_contribution)
+
+        if engine.lower()=='plotly':
+            render_plotly._plot_reward(self.action_dates, self.rewards, self.benchmark_rewards, self.reward_type, self.holding_period, self.plot_benchmark)
+            if plot_actions:
+                render_plotly._plot_actions(self.action_dates, self.actions, self.benchmark_actions, self.asset_names, plot_relative)
+            if plot_returns:
+                render_plotly._plot_returns(self.window_dates, portfolio_cumulative_returns, benchmark_cumulative_returns, 
+                                portfolio_cumulative_individual_returns, benchmark_cumulative_individual_returns, 
+                                self.asset_names, self.num_assets, self.plot_benchmark, plot_individual=plot_individual,
+                                plot_contribution=plot_contribution)
+        elif engine=='matplotlib':
+            render_mpl._plot_reward(self.action_dates, self.rewards, self.benchmark_rewards, self.reward_type, self.holding_period, self.plot_benchmark)
+            if plot_actions:
+                render_mpl._plot_actions(self.action_dates, self.actions, self.benchmark_actions, self.asset_names, plot_relative)
+            if plot_returns:
+                render_mpl._plot_returns(self.window_dates, portfolio_cumulative_returns, benchmark_cumulative_returns, 
+                                portfolio_cumulative_individual_returns, benchmark_cumulative_individual_returns, 
+                                self.asset_names, self.num_assets, self.plot_benchmark, plot_individual=plot_individual,
+                                plot_contribution=plot_contribution)
+        else:
+            raise ValueError('Render engine must be either "plotly" or "matplotlib"')
                                
 
     ## Private utils for calculations ##
@@ -226,8 +240,8 @@ class AssetAllocationEnv(Env):
     def _set_dates(self):
         """Returns the dates for the window, action, and holding periods"""
 
-        self.window_dates = self.dates[self.beg_ind+self.lookback:self.terminal_ind] 
-        self.action_dates = self.dates[self.beg_ind+self.lookback:self.terminal_ind:self.holding_period]
+        self.window_dates = self.dates[self.beg_ind+self.lookback:self.terminal_ind-self.holding_period+1] 
+        self.action_dates = self.dates[self.beg_ind+self.lookback:self.terminal_ind-self.holding_period:self.holding_period]
         self.holding_dates = self.dates[self.beg_ind+self.lookback+self.holding_period:self.terminal_ind:self.holding_period]
 
 

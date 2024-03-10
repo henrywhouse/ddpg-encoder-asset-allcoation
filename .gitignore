@@ -1,4 +1,5 @@
 config.py
+DDPG_test_client_plotly.ipynb
 misc/
 models/
 __pycache__/

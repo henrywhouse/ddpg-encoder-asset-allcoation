@@ -143,7 +143,7 @@ def _plot_returns(window_dates, portfolio_cumulative_returns, benchmark_cumulati
 
     if plot_contribution:
         # Plot contribution of each asset to portfolio returns
-        rows = num_assets//2
+        rows = num_assets // 2
         asset_relative_contribution = portfolio_cumulative_individual_returns - benchmark_cumulative_individual_returns
         rel_con_percentages = [int(np.round(100 * np.abs(asset_relative_contribution[-1, i])/np.sum(np.abs(asset_relative_contribution[-1])), \
                                     decimals=0)) for i in range(num_assets)]

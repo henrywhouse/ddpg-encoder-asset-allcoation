@@ -7,6 +7,7 @@ import pandas as pd
 from tqdm.notebook import tqdm
 import plotly.express as px
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 class RLInterface(object):
     """Reinforcement learning interface for handling interactions between the agent and evnironment
@@ -50,6 +51,7 @@ class RLInterface(object):
             if advanced_stats:
                 self._update_train_advanced_stats()
         history = self._compile_train_history(advanced_stats)
+        self.agent.noise.reset()
         return history
     
 
@@ -83,7 +85,8 @@ class RLInterface(object):
             # Update Scores & Statistics
             if advanced_stats:
                 self._update_test_advanced_stats()
-            history = self._compile_test_history(advanced_stats=advanced_stats)
+        history = self._compile_test_history(advanced_stats=advanced_stats)
+        self.agent.noise.reset()
         return history
     
 
@@ -93,7 +96,7 @@ class RLInterface(object):
         return self.agent.get_action(state, use_noise=use_noise)
     
 
-    def plot_learning(self, scores, rolling_period=10):
+    def plot_learning(self, engine='plotly', scores=None, rolling_period=10):
         """Plot the learning curve of RL algorithm using Plotly"""
 
         rolling_avg = pd.Series(scores).rolling(window=rolling_period).mean()
@@ -102,25 +105,38 @@ class RLInterface(object):
         upper_bound = rolling_avg + std_dev
         lower_bound = rolling_avg - std_dev
 
-        df = pd.DataFrame({'Episode': range(len(scores)),
-                        'Episode Reward': scores,
-                        f'{rolling_period}-Episode Rolling Avg.': rolling_avg,
-                        f'Cumulative Rolling Avg.': cumulative_avg,
-                        'Upper Bound': upper_bound,
-                        'Lower Bound': lower_bound})
-        
-        fig = px.line(df, x='Episode', y=['Episode Reward', f'{rolling_period}-Episode Rolling Avg.', 'Cumulative Rolling Avg.'],
-                    labels={'Episode Reward': 'Episode Reward', 'value': 'Value'},
-                    title='Learning Curve')
-        
-        fig.add_trace(go.Scatter(x=df['Episode'].tolist() + df['Episode'].tolist()[::-1],
-                                y=df['Upper Bound'].tolist() + df['Lower Bound'].tolist()[::-1],
-                                fill='toself',
-                                fillcolor='rgba(0, 0, 255, 0.2)',
-                                line=dict(color='rgba(255, 255, 255, 0)'),
-                                name='Rolling Avg ± Std. Dev.',
-                                showlegend=True))
-        fig.show()
+        if engine.lower()=='plotly':
+            df = pd.DataFrame({'Episode': range(len(scores)),
+                            'Episode Reward': scores,
+                            f'{rolling_period}-Episode Rolling Avg.': rolling_avg,
+                            f'Cumulative Rolling Avg.': cumulative_avg,
+                            'Upper Bound': upper_bound,
+                            'Lower Bound': lower_bound})
+            
+            fig = px.line(df, x='Episode', y=['Episode Reward', f'{rolling_period}-Episode Rolling Avg.', 'Cumulative Rolling Avg.'],
+                        labels={'Episode Reward': 'Episode Reward', 'value': 'Reward'},
+                        title='Learning Curve')
+            
+            fig.add_trace(go.Scatter(x=df['Episode'].tolist() + df['Episode'].tolist()[::-1],
+                                    y=df['Upper Bound'].tolist() + df['Lower Bound'].tolist()[::-1],
+                                    fill='toself',
+                                    fillcolor='rgba(0, 0, 255, 0.2)',
+                                    line=dict(color='rgba(255, 255, 255, 0)'),
+                                    name='Rolling Avg ± Std. Dev.',
+                                    showlegend=True))
+            fig.show()
+
+        elif engine.lower()=='matplotlib':
+            plt.figure(figsize=(10, 6))
+            plt.plot(range(1, len(scores)+1), rolling_avg, label=f'{rolling_period}-Episode Rolling Avg.')
+            plt.plot(range(1, len(scores)+1), cumulative_avg, label='Cumulative Rolling Avg.')
+            plt.title('Learning Curve')
+            plt.xlabel('Episode')
+            plt.ylabel('Reward')
+            plt.legend()
+            plt.show()
+        else:
+            raise ValueError('Render engine must be either "plotly" or "matplotlib"')
 
 
     def save_models(self):

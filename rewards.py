@@ -28,10 +28,10 @@ def rolling_market_ratio(returns, rf, benchmark):
 
 def rolling_alpha(returns, rf, benchmark):
     """Calculates rolling Sharpe ratio with a benchmark over a holding period and returns it"""
-    
+
     rf = rf / 252 # Adjust rf for daily compounding
-    covariance = np.cov(np.squeeze(returns), np.squeeze(benchmark))[0,1]  # Calculate covariance with benchmark (market) portfolio
-    var_rm = np.var(benchmark)
+    covariance = np.cov(np.squeeze(returns), np.squeeze(benchmark), ddof=1)[0,1]  # Calculate covariance with benchmark (market) portfolio
+    var_rm = np.var(benchmark, ddof=1)
     beta = covariance / var_rm
     alpha = np.mean(returns) - np.mean(rf) - beta * (np.mean(benchmark) - np.mean(rf))
     annualized_alpha = alpha * np.sqrt(252)  # Annualization
