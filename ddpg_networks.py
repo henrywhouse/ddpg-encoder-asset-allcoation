@@ -1,6 +1,6 @@
 import keras
 from keras.layers import InputLayer, Dense, Flatten
-from keras.activations import relu, softmax
+from keras.activations import relu, softmax, tanh
 from keras.initializers import glorot_uniform
 import tensorflow as tf
 import os
@@ -20,7 +20,7 @@ class Actor(keras.Model):
 
         self.input_layer = InputLayer(input_shape=self.state_dims)
         self.custom_layers = layers
-        self.output_layer = Dense(num_actions, activation=softmax, kernel_initializer=glorot_uniform())
+        self.output_layer = Dense(num_actions, activation=tanh, kernel_initializer=glorot_uniform())
 
         self.model_name = name
         self.chkpt_dir = chkpt_dir
@@ -50,7 +50,7 @@ class Critic(keras.Model):
         self.state_flatten = Flatten()
         self.action_flatten = Flatten()
         self.custom_layers = layers
-        self.fc3 = Dense(1, kernel_initializer=glorot_uniform()) 
+        self.fc3 = Dense(1, kernel_initializer=glorot_uniform(), activation=relu) 
 
         self.model_name = name
         self.chkpt_dir = chkpt_dir

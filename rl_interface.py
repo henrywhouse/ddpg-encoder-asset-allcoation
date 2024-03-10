@@ -213,7 +213,7 @@ class RLInterface(object):
         self.train_volatility_history += [np.std(self.train_env.portfolio_returns)*np.sqrt(252)]
         self.train_relative_volatility_history += [np.std(self.train_env.portfolio_returns) / np.std(self.train_env.benchmark_returns)]
         beta = np.cov(np.squeeze(self.train_env.portfolio_returns), 
-                        np.squeeze(self.train_env.benchmark_returns))[0,1] / np.var(self.train_env.benchmark_returns)
+                        np.squeeze(self.train_env.benchmark_returns, ddof=1))[0,1] / np.var(self.train_env.benchmark_returns, ddof=1)
         self.train_beta_history += [beta]
         correlation = np.corrcoef(np.squeeze(self.train_env.portfolio_returns), np.squeeze(self.train_env.benchmark_returns))[0,1]
         self.train_correlation_history += [correlation]
@@ -230,7 +230,7 @@ class RLInterface(object):
         self.test_volatility_history += [np.std(self.test_env.portfolio_returns)*np.sqrt(252)]
         self.test_relative_volatility_history += [np.std(self.test_env.portfolio_returns) / np.std(self.test_env.benchmark_returns)]
         beta = np.cov(np.squeeze(self.test_env.portfolio_returns), 
-                        np.squeeze(self.test_env.benchmark_returns))[0,1] / np.var(self.test_env.benchmark_returns)
+                        np.squeeze(self.test_env.benchmark_returns), ddof=1)[0,1] / np.var(self.test_env.benchmark_returns, ddof=1)
         self.test_beta_history += [beta]
         correlation = np.corrcoef(np.squeeze(self.test_env.portfolio_returns), np.squeeze(self.test_env.benchmark_returns))[0,1]
         self.test_correlation_history += [correlation]

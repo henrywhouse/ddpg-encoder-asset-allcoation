@@ -114,6 +114,8 @@ class DDPGAgent(object):
             noise = self.noise()
             action += noise
             action = softmax(action)
+        else:
+            action = softmax(action)
 
         return action.numpy()
 
