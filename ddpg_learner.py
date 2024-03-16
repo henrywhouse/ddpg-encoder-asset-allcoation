@@ -63,9 +63,8 @@ class Learner(object):
         with tf.GradientTape() as tape:
             actions = self.actor.call(state_batch)
             critic_value = self.critic.call(state_batch, actions)
-            actor_loss = -tf.math.reduce_mean(critic_value)  # Used `-value` as we want to maximize 
-                                                             # the value given by the critic for our actions
-
+            actor_loss = -tf.math.reduce_mean(critic_value)  # Used to maximize `-value` 
+            
         ## Compute the gradients of the actor network        
         actor_grad = tape.gradient(actor_loss, self.actor.trainable_variables)
 
