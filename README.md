@@ -5,7 +5,7 @@
 ### Summary of the Algorithm Implementation
 
 ##### Introduction
-This repository is a data science project that implements the Deep Deterministic Policy Gradient (DDPG) algorithm on a customized stock trading market environment. This implements functionality for customizing the actor and critic networks, adjusting the (Ornstein-Uhlenbeck) noise, adding/pre-processing features through the implementation of a customized MarketData class, implements robust methods for training/testing of the algorithm, multi-GPU distributed training, and algorithm visualization in plotly and matplotlib. 
+This repository is a data science project that implements the Deep Deterministic Policy Gradient (DDPG) algorithm on a customized stock trading market environment. This implements functionality for customizing the actor and critic networks, adjusting the (Ornstein-Uhlenbeck) noise, adding/pre-processing features through the implementation of a customized MarketData class, implements robust methods for training/testing of the algorithm, multi-GPU distributed training, and algorithm visualization in Plotly and Matplotlib. 
 
 The data used in this demonstration has three main components: equity price candles, macroeconomic indicators, and the risk-free rate. All data used is from January 3, 2013 to February 1, 2024. The equity price candles are taken for the top 10 stocks (as weighted in the S&P 500). The macroeconomic indicators are the measures of 5-year breakeven inflation, 5-year forward inflation expectation, the federal funds rate, the 10- minus 2-year U.S. treasury spread and the CBOE Volatility Index (VIX). The risk-free rate is measured as the 3-month U.S. treasury bill.
 
