@@ -9,9 +9,6 @@ This repository is a data science project that implements the Deep Deterministic
 
 The data used in this demonstration has three main components: equity price candles, macroeconomic indicators, and the risk-free rate. All data used is from January 3, 2013 to February 1, 2024. The equity price candles are taken for the top 10 stocks (as weighted in the S&P 500). The macroeconomic indicators are the measures of 5-year breakeven inflation, 5-year forward inflation expectation, the federal funds rate, the 10- minus 2-year U.S. treasury spread and the CBOE Volatility Index (VIX). The risk-free rate is measured as the 3-month U.S. treasury bill.
 
-This code borrows from the Youtube video "Everything You Need to Know About Deep Deterministic Policy Gradients (DDPG) | Tensorflow 2 Tutorial" from Machine Learning with Phil
-Link: https://www.youtube.com/watch?v=4jh32CvwKYw
-
 ##### Pre-Processing
 To pre-process the data, we begin by passing our raw DataFrames into our MarketData class, which structures our data such that we can easily input it into our reinforcement learning environment. The MarketData class calculates returns of the assets and stores them separately. It then applies a MinMaxScaler() scaler to each of the matrices of stock prices and macroeconomic indicators. This is particularly important when including volume data as that is typically many orders of magnitude greater than our price or macroeconomic data, and it can adversely affect the predictive power of the networks. 
 
